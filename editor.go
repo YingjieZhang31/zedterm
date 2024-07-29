@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"zedterm/terminal"
 
 	"github.com/nsf/termbox-go"
 )
@@ -20,27 +20,29 @@ func newEditor() *Editor {
 
 func (e *Editor) run() {
 	for {
+		terminal.HideCursor()
+		e.refreshScreen()
+		terminal.ShowCursor(0, 0)
+		terminal.Flush()
 		if e.needQuit {
-			termbox.Close()
+			terminal.Terminate()
 			break
 		}
-		e.refreshScreen()
 		ev := termbox.PollEvent()
 		e.processEvent(ev)
 	}
 }
 
 func (e *Editor) processEvent(ev termbox.Event) {
-	if ch := ev.Ch; ch != 0 {
-		if ch == 'q' {
-			e.needQuit = true
-		}
+	if ev.Key == termbox.KeyCtrlQ {
+		e.needQuit = true
+		return
 	}
 }
 
 func (e *Editor) refreshScreen() {
-	_, height := termbox.Size()
+	_, height := terminal.Size()
 	for i := 0; i < height; i++ {
-		fmt.Printf("~\r\n")
+		terminal.PrintLine(i, "~")
 	}
 }

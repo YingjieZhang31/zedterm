@@ -1,6 +1,8 @@
 package view
 
 import (
+	"os"
+
 	"zedterm/terminal"
 	"zedterm/utils"
 
@@ -10,10 +12,23 @@ import (
 type View struct {
 	TextLocX int
 	TextLocY int
+
+	buffer *buffer
 }
 
 func NewView() *View {
-	return &View{}
+	v := &View{
+		buffer: newBuffer(),
+	}
+	if len(os.Args) > 1 {
+		// TODO: check whether load file success
+		_ = v.loadFile(os.Args[1])
+	}
+	return v
+}
+
+func (v *View) loadFile(fileName string) error {
+	return v.buffer.loadFile(fileName)
 }
 
 func (v *View) CursorPos() (int, int) {
@@ -22,9 +37,12 @@ func (v *View) CursorPos() (int, int) {
 
 func (v *View) Render() {
 	_, height := terminal.Size()
-	terminal.PrintLine(0, "Hello, world!")
-	for i := 1; i < height; i++ {
-		terminal.PrintLine(i, "~")
+	for i := 0; i < height; i++ {
+		if i < len(v.buffer.lines) {
+			terminal.PrintLine(i, v.buffer.lines[i])
+		} else {
+			terminal.PrintLine(i, "~")
+		}
 	}
 }
 

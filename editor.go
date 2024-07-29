@@ -6,8 +6,24 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 type Editor struct {
 	needQuit bool
+
+	TextLocX int
+	TextLocY int
 }
 
 func newEditor() *Editor {
@@ -22,7 +38,7 @@ func (e *Editor) run() {
 	for {
 		terminal.HideCursor()
 		e.refreshScreen()
-		terminal.ShowCursor(0, 0)
+		terminal.ShowCursor(e.TextLocX, e.TextLocY)
 		terminal.Flush()
 		if e.needQuit {
 			terminal.Terminate()
@@ -34,10 +50,29 @@ func (e *Editor) run() {
 }
 
 func (e *Editor) processEvent(ev termbox.Event) {
-	if ev.Key == termbox.KeyCtrlQ {
+	switch ev.Key {
+	case termbox.KeyCtrlQ:
 		e.needQuit = true
-		return
+	case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
+		e.moveCursor(ev.Key)
 	}
+}
+
+func (e *Editor) moveCursor(key termbox.Key) {
+	windowWidth, windowHeight := terminal.Size()
+	x, y := e.TextLocX, e.TextLocY
+	switch key {
+	case termbox.KeyArrowUp:
+		y = max(0, y-1)
+	case termbox.KeyArrowDown:
+		y = min(windowHeight-1, y+1)
+	case termbox.KeyArrowLeft:
+		x = max(0, x-1)
+	case termbox.KeyArrowRight:
+		x = min(windowWidth-1, x+1)
+	default:
+	}
+	e.TextLocX, e.TextLocY = x, y
 }
 
 func (e *Editor) refreshScreen() {

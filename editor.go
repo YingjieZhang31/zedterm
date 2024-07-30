@@ -2,13 +2,15 @@ package main
 
 import (
 	"zedterm/terminal"
+	"zedterm/ui"
 	"zedterm/ui/view"
 
 	"github.com/nsf/termbox-go"
 )
 
 type editor struct {
-	view *view.View
+	view      *view.View
+	statusBar *ui.StatusBar
 
 	needQuit bool
 }
@@ -19,14 +21,19 @@ func newEditor() *editor {
 		panic(err)
 	}
 	return &editor{
-		view: view.NewView(),
+		view:      view.NewView(),
+		statusBar: ui.NewStatusBar(),
 	}
 }
 
 func (e *editor) run() {
 	for {
 		terminal.HideCursor()
+		terminal.Clear()
 		e.view.Render()
+		status := e.view.GetDocStatus()
+		e.statusBar.UpdateDocStatus(status)
+		e.statusBar.Render()
 		terminal.ShowCursor(e.view.CursorPos())
 		terminal.Flush()
 		if e.needQuit {

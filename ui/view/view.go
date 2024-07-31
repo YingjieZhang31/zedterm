@@ -14,6 +14,9 @@ type View struct {
 	TextLocX int
 	TextLocY int
 
+	ScrollOffsetX int
+	ScrollOffsetY int
+
 	buffer *buffer
 }
 
@@ -57,15 +60,17 @@ func (v *View) GetDocStatus() *doc_status.DocStatus {
 }
 
 func (v *View) CursorPos() (int, int) {
-	return v.TextLocX, v.TextLocY
+	return v.TextLocX - v.ScrollOffsetX, v.TextLocY - v.ScrollOffsetY
 }
 
 func (v *View) Render() {
-	width, height := v.size()
-	for i := 0; i < height; i++ {
-		if i < len(v.buffer.lines) {
-			from, to := 0, width
-			substr := v.getVisibleText(v.buffer.lines[i], from, to)
+	lines := v.buffer.lines
+	viewWidth, viewHeight := v.size()
+	topYIndex := v.ScrollOffsetY
+	for i := 0; i < viewHeight; i++ {
+		if i+topYIndex < len(lines) {
+			from, to := v.ScrollOffsetX, v.ScrollOffsetX+viewWidth
+			substr := v.getVisibleText(lines[i+topYIndex], from, to)
 			terminal.PrintLine(i, substr)
 		} else {
 			terminal.PrintLine(i, "~")
@@ -74,34 +79,55 @@ func (v *View) Render() {
 }
 
 func (v *View) MoveCursor(key termbox.Key) {
-	_, windowHeight := v.size()
-	x, y := v.TextLocX, v.TextLocY
+	lines := v.buffer.lines
+	x := v.TextLocX
+	y := v.TextLocY
 	switch key {
 	case termbox.KeyArrowUp:
 		if y > 0 {
 			y -= 1
-			x = utils.MinInt(x, len(v.buffer.lines[y]))
+			x = utils.MaxInt(0, utils.MinInt(x, len(lines[y])-1))
 		}
 	case termbox.KeyArrowDown:
-		if y < len(v.buffer.lines)-1 {
+		if y < len(lines) {
 			y += 1
-			x = utils.MinInt(x, len(v.buffer.lines[y]))
+			if y == len(lines) {
+				x = 0
+			} else if x >= len(lines[y]) {
+				x = utils.MaxInt(0, len(lines[y])-1)
+			}
 		}
 	case termbox.KeyArrowLeft:
 		if x > 0 {
 			x -= 1
 		} else if y > 0 {
 			y -= 1
-			x = len(v.buffer.lines[y])
+			x = utils.MaxInt(x, len(lines[y]))
 		}
 	case termbox.KeyArrowRight:
-		if x < len(v.buffer.lines[y]) {
+		if y < len(lines) && x < len(lines[y]) {
 			x += 1
-		} else if y < windowHeight-1 && y < len(v.buffer.lines)-1 {
+		} else if y <= len(lines)-1 {
 			y += 1
-			x = utils.MinInt(x, len(v.buffer.lines[y]))
+			x = 0
 		}
-	default:
 	}
-	v.TextLocX, v.TextLocY = x, y
+	v.TextLocX = x
+	v.TextLocY = y
+
+	// scroll to move text into view
+	windowWidth, windowHeight := v.size()
+	// vertically
+	if y < v.ScrollOffsetY {
+		v.ScrollOffsetY = y
+	} else if y >= v.ScrollOffsetY+windowHeight {
+		v.ScrollOffsetY = y - windowHeight + 1
+	}
+
+	// horizontally
+	if x < v.ScrollOffsetX {
+		v.ScrollOffsetX = x
+	} else if x >= v.ScrollOffsetX+windowWidth {
+		v.ScrollOffsetX = x - windowWidth + 1
+	}
 }

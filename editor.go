@@ -52,4 +52,7 @@ func (e *editor) processEvent(ev termbox.Event) {
 	case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
 		e.view.MoveCursor(ev.Key)
 	}
+	if ev.Ch != 0 {
+		e.view.InsertChar(ev.Ch)
+	}
 }

@@ -51,6 +51,11 @@ func (v *View) size() (width, height int) {
 	return
 }
 
+func (v *View) InsertChar(ch rune) {
+	v.buffer.insertChar(v.TextLocY, v.TextLocX, ch)
+	v.MoveCursor(termbox.KeyArrowRight)
+}
+
 func (v *View) GetDocStatus() *doc_status.DocStatus {
 	return &doc_status.DocStatus{
 		TextLocX: v.TextLocX,

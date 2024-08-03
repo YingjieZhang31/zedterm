@@ -17,6 +17,17 @@ func newBuffer() *buffer {
 	}
 }
 
+func (b *buffer) insertChar(row, col int, r rune) {
+	// insert char at new row
+	if len(b.lines) == row {
+		b.lines = append(b.lines, string(r))
+		return
+	}
+	// insert char at existing row
+	line := b.lines[row]
+	b.lines[row] = line[:col] + string(r) + line[col:]
+}
+
 func (b *buffer) loadFile(fileName string) error {
 	if fileName == "" {
 		return nil

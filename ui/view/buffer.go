@@ -17,12 +17,27 @@ func newBuffer() *buffer {
 	}
 }
 
+func (b *buffer) len() int {
+	return len(b.lines)
+}
+
+func (b *buffer) getLine(row int) string {
+	if n := b.len(); n > row {
+		return b.lines[row]
+	}
+	return ""
+}
+
 func (b *buffer) Delete(atRow, atCol int) {
 	if len(b.lines) <= atRow {
 		return
 	}
 	text := b.lines[atRow]
-	if atCol < len(text) {
+	if atCol >= len(text) && len(b.lines) > atRow+1 {
+		nextLine := b.lines[atRow+1]
+		b.lines = append(b.lines[:atRow], b.lines[atRow+1:]...)
+		b.lines[atRow] = text + nextLine
+	} else if atCol < len(text) {
 		b.lines[atRow] = text[:atCol] + text[atCol+1:]
 	}
 }

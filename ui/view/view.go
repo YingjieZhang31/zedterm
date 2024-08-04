@@ -96,6 +96,11 @@ func (v *View) Render() {
 	}
 }
 
+func (v *View) NewLine() {
+	v.buffer.NewLine(v.TextLocY, v.TextLocX)
+	v.MoveCursor(termbox.KeyArrowRight)
+}
+
 func (v *View) MoveCursor(key termbox.Key) {
 	bufLen := v.buffer.len()
 	x := v.TextLocX

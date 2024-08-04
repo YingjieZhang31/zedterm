@@ -51,6 +51,8 @@ func (e *editor) processEvent(ev termbox.Event) {
 		e.needQuit = true
 	case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
 		e.view.MoveCursor(ev.Key)
+	case termbox.KeyEnter:
+		e.view.NewLine()
 	case termbox.KeyDelete:
 		e.view.Delete()
 	case termbox.KeyBackspace, termbox.KeyBackspace2:

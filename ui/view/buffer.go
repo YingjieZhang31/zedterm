@@ -28,6 +28,17 @@ func (b *buffer) getLine(row int) string {
 	return ""
 }
 
+func (b *buffer) NewLine(row, col int) {
+	if b.len() == row {
+		b.lines = append(b.lines, "")
+		return
+	}
+	line := b.lines[row]
+	leftLine, rightLine := line[:col], line[col:]
+	b.lines[row] = leftLine
+	b.lines = append(b.lines[:row+1], append([]string{rightLine}, b.lines[row+1:]...)...)
+}
+
 func (b *buffer) Delete(atRow, atCol int) {
 	if len(b.lines) <= atRow {
 		return

@@ -56,6 +56,20 @@ func (v *View) InsertChar(ch rune) {
 	v.MoveCursor(termbox.KeyArrowRight)
 }
 
+func (v *View) Backspace() {
+	atRow, atCol := v.TextLocY, v.TextLocX
+	if atRow >= 0 && atCol > 0 {
+		v.MoveCursor(termbox.KeyArrowLeft)
+		atRow, atCol = v.TextLocY, v.TextLocX
+		v.buffer.Delete(atRow, atCol)
+	}
+}
+
+func (v *View) Delete() {
+	atRow, atCol := v.TextLocY, v.TextLocX
+	v.buffer.Delete(atRow, atCol)
+}
+
 func (v *View) GetDocStatus() *doc_status.DocStatus {
 	return &doc_status.DocStatus{
 		TextLocX: v.TextLocX,

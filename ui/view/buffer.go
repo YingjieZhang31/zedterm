@@ -17,6 +17,16 @@ func newBuffer() *buffer {
 	}
 }
 
+func (b *buffer) Delete(atRow, atCol int) {
+	if len(b.lines) <= atRow {
+		return
+	}
+	text := b.lines[atRow]
+	if atCol < len(text) {
+		b.lines[atRow] = text[:atCol] + text[atCol+1:]
+	}
+}
+
 func (b *buffer) insertChar(row, col int, r rune) {
 	// insert char at new row
 	if len(b.lines) == row {

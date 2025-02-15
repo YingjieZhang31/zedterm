@@ -51,6 +51,25 @@ func (v *View) size() (width, height int) {
 	return
 }
 
+func (v *View) InsertChar(ch rune) {
+	v.buffer.insertChar(v.TextLocY, v.TextLocX, ch)
+	v.MoveCursor(termbox.KeyArrowRight)
+}
+
+func (v *View) Backspace() {
+	atRow, atCol := v.TextLocY, v.TextLocX
+	if atRow >= 0 || atCol >= 0 {
+		v.MoveCursor(termbox.KeyArrowLeft)
+		atRow, atCol = v.TextLocY, v.TextLocX
+		v.buffer.Delete(atRow, atCol)
+	}
+}
+
+func (v *View) Delete() {
+	atRow, atCol := v.TextLocY, v.TextLocX
+	v.buffer.Delete(atRow, atCol)
+}
+
 func (v *View) GetDocStatus() *doc_status.DocStatus {
 	return &doc_status.DocStatus{
 		TextLocX: v.TextLocX,
@@ -64,13 +83,12 @@ func (v *View) CursorPos() (int, int) {
 }
 
 func (v *View) Render() {
-	lines := v.buffer.lines
-	viewWidth, viewHeight := v.size()
+	windowWidth, windowHeight := v.size()
 	topYIndex := v.ScrollOffsetY
-	for i := 0; i < viewHeight; i++ {
-		if i+topYIndex < len(lines) {
-			from, to := v.ScrollOffsetX, v.ScrollOffsetX+viewWidth
-			substr := v.getVisibleText(lines[i+topYIndex], from, to)
+	for i := 0; i < windowHeight; i++ {
+		if i+topYIndex < v.buffer.len() {
+			from, to := v.ScrollOffsetX, v.ScrollOffsetX+windowWidth
+			substr := v.getVisibleText(v.buffer.getLine(i+topYIndex), from, to)
 			terminal.PrintLine(i, substr)
 		} else {
 			terminal.PrintLine(i, "~")
@@ -78,23 +96,28 @@ func (v *View) Render() {
 	}
 }
 
+func (v *View) NewLine() {
+	v.buffer.NewLine(v.TextLocY, v.TextLocX)
+	v.MoveCursor(termbox.KeyArrowRight)
+}
+
 func (v *View) MoveCursor(key termbox.Key) {
-	lines := v.buffer.lines
+	bufLen := v.buffer.len()
 	x := v.TextLocX
 	y := v.TextLocY
 	switch key {
 	case termbox.KeyArrowUp:
 		if y > 0 {
 			y -= 1
-			x = utils.MaxInt(0, utils.MinInt(x, len(lines[y])-1))
+			x = utils.MaxInt(0, utils.MinInt(x, len(v.buffer.getLine(y))-1))
 		}
 	case termbox.KeyArrowDown:
-		if y < len(lines) {
+		if y < bufLen {
 			y += 1
-			if y == len(lines) {
+			if y == bufLen {
 				x = 0
-			} else if x >= len(lines[y]) {
-				x = utils.MaxInt(0, len(lines[y])-1)
+			} else if line := v.buffer.getLine(y); x >= len(line) {
+				x = utils.MaxInt(0, len(line)-1)
 			}
 		}
 	case termbox.KeyArrowLeft:
@@ -102,12 +125,12 @@ func (v *View) MoveCursor(key termbox.Key) {
 			x -= 1
 		} else if y > 0 {
 			y -= 1
-			x = utils.MaxInt(x, len(lines[y]))
+			x = utils.MaxInt(x, len(v.buffer.getLine(y)))
 		}
 	case termbox.KeyArrowRight:
-		if y < len(lines) && x < len(lines[y]) {
+		if y < bufLen && x < len(v.buffer.getLine(y)) {
 			x += 1
-		} else if y <= len(lines)-1 {
+		} else if y <= bufLen-1 {
 			y += 1
 			x = 0
 		}

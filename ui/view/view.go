@@ -31,6 +31,10 @@ func NewView() *View {
 	return v
 }
 
+func (v *View) SaveFile() error {
+	return v.buffer.saveFile()
+}
+
 func (v *View) loadFile(fileName string) error {
 	return v.buffer.loadFile(fileName)
 }

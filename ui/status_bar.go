@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	statusBarFmtStr = "file: %s | line: %d, col: %d"
+	statusBarFmtStr = "file: %s | line: %d, col: %d | Ctrl-S to save"
 )
 
 type StatusBar struct {
@@ -25,5 +25,13 @@ func (m *StatusBar) UpdateDocStatus(s *doc_status.DocStatus) {
 
 func (s *StatusBar) Render() {
 	_, windowHeight := terminal.Size()
-	terminal.PrintLine(windowHeight-1, fmt.Sprintf(statusBarFmtStr, s.currentStatus.FileName, s.currentStatus.TextLocY, s.currentStatus.TextLocX))
+	terminal.PrintLine(
+		windowHeight-1,
+		fmt.Sprintf(
+			statusBarFmtStr,
+			s.currentStatus.FileName,
+			s.currentStatus.TextLocY,
+			s.currentStatus.TextLocX,
+		),
+	)
 }

@@ -81,3 +81,21 @@ func (b *buffer) loadFile(fileName string) error {
 
 	return nil
 }
+
+func (b *buffer) saveFile() error {
+	//file, err := os.OpenFile("a.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	fd, err := os.OpenFile(b.fileName, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+
+	for _, line := range b.lines {
+		_, err = fd.WriteString(line + "\n")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -57,6 +57,8 @@ func (e *editor) processEvent(ev termbox.Event) {
 		e.view.Delete()
 	case termbox.KeyBackspace, termbox.KeyBackspace2:
 		e.view.Backspace()
+	case termbox.KeyCtrlS:
+		e.view.SaveFile()
 	}
 	if ev.Ch != 0 {
 		e.view.InsertChar(ev.Ch)

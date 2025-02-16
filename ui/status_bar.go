@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	statusBarFmtStr = "file: %s | line: %d, col: %d | Ctrl-S to save"
+	statusBarFmtStr = "file: %s | row: %d, col: %d, lines: %d | Ctrl-S to save | %s"
 )
 
 type StatusBar struct {
@@ -32,6 +32,8 @@ func (s *StatusBar) Render() {
 			s.currentStatus.FileName,
 			s.currentStatus.TextLocY,
 			s.currentStatus.TextLocX,
+			s.currentStatus.TotalLineNum,
+			s.currentStatus.Hint,
 		),
 	)
 }

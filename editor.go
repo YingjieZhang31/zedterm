@@ -51,14 +51,25 @@ func (e *editor) processEvent(ev termbox.Event) {
 		e.needQuit = true
 	case termbox.KeyArrowUp, termbox.KeyArrowDown, termbox.KeyArrowLeft, termbox.KeyArrowRight:
 		e.view.MoveCursor(ev.Key)
+		e.view.SetDefaultHint()
 	case termbox.KeyEnter:
 		e.view.NewLine()
+		e.view.SetDefaultHint()
 	case termbox.KeyDelete:
 		e.view.Delete()
+		e.view.SetDefaultHint()
 	case termbox.KeyBackspace, termbox.KeyBackspace2:
 		e.view.Backspace()
+		e.view.SetDefaultHint()
+	case termbox.KeySpace:
+		e.view.InsertChar(' ')
 	case termbox.KeyCtrlS:
-		e.view.SaveFile()
+		err := e.view.SaveFile()
+		if err != nil {
+			e.view.SetHint("Unable to saved!")
+		} else {
+			e.view.SetHint("Saved!")
+		}
 	}
 	if ev.Ch != 0 {
 		e.view.InsertChar(ev.Ch)

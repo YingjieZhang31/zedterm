@@ -11,13 +11,16 @@ import (
 )
 
 type View struct {
-	TextLocX int
-	TextLocY int
+	TextLocX     int
+	TextLocY     int
+	TotalLineNum int
 
 	ScrollOffsetX int
 	ScrollOffsetY int
 
 	buffer *buffer
+
+	hint string
 }
 
 func NewView() *View {
@@ -29,6 +32,14 @@ func NewView() *View {
 		_ = v.loadFile(os.Args[1])
 	}
 	return v
+}
+
+func (v *View) SetHint(hint string) {
+	v.hint = hint
+}
+
+func (v *View) SetDefaultHint() {
+	v.SetHint("")
 }
 
 func (v *View) SaveFile() error {
@@ -76,9 +87,11 @@ func (v *View) Delete() {
 
 func (v *View) GetDocStatus() *doc_status.DocStatus {
 	return &doc_status.DocStatus{
-		TextLocX: v.TextLocX,
-		TextLocY: v.TextLocY,
-		FileName: v.buffer.fileName,
+		TextLocX:     v.TextLocX,
+		TextLocY:     v.TextLocY,
+		TotalLineNum: v.buffer.len(),
+		FileName:     v.buffer.fileName,
+		Hint:         v.hint,
 	}
 }
 

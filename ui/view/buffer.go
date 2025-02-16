@@ -83,8 +83,7 @@ func (b *buffer) loadFile(fileName string) error {
 }
 
 func (b *buffer) saveFile() error {
-	//file, err := os.OpenFile("a.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	fd, err := os.OpenFile(b.fileName, os.O_WRONLY|os.O_CREATE, 0644)
+	fd, err := os.Create(b.fileName)
 	if err != nil {
 		return err
 	}
